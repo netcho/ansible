@@ -31,6 +31,20 @@ class LinuxVirtual(Virtual):
     """
     platform = 'Linux'
 
+    def _read_field_from_dmi(self, sys_name, dmi_decode_name):
+        # In older Linux Kernel versions, /sys filesystem is not available
+        # dmidecode is the safest option to parse virtualization related values
+        dmi_bin = self.module.get_bin_path('dmidecode')
+
+        value = get_file_content('/sys/devices/virtual/dmi/id/%s' % sys_name)
+
+        if value is None and dmi_bin is not None:
+            (rc, out, err) = self.module.run_command('%s -s %s' % dmi_bin, dmi_decode_name)
+            if rc == 0:
+                value = ''.join([line.strip() for line in out.splitlines() if not line.startswith('#')])
+
+        return value
+
     # For more information, check: http://people.redhat.com/~rjones/virt-what/
     def get_virtual_facts(self):
         virtual_facts = {}
