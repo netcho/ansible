@@ -22,6 +22,8 @@ import re
 from ansible.module_utils.facts.virtual.base import Virtual, VirtualCollector
 from ansible.module_utils.facts.utils import get_file_content, get_file_lines
 
+KVM_SYS_VENDORS = ('QEMU', 'Amazon EC2', 'DigitalOcean', 'Google', 'Scaleway', 'Nutanix')
+
 
 class LinuxVirtual(Virtual):
     """
@@ -226,7 +228,6 @@ class LinuxVirtual(Virtual):
                 virtual_facts['virtualization_type'] = 'kvm'
                 found_virt = True
 
-        KVM_SYS_VENDORS = ('QEMU', 'Amazon EC2', 'DigitalOcean', 'Google', 'Scaleway', 'Nutanix')
         if sys_vendor in KVM_SYS_VENDORS:
             guest_tech.add('kvm')
             if not found_virt:
