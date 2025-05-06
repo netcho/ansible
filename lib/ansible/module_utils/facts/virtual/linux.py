@@ -196,6 +196,12 @@ class LinuxVirtual(Virtual):
                 virtual_facts['virtualization_type'] = 'VMware'
                 found_virt = True
 
+        if product_name and 'BHYVE' in product_name:
+            guest_tech.add('bhyve')
+            if not found_virt:
+                virtual_facts['virtualization_type'] = 'bhyve'
+                found_virt = True
+
         if product_name in ('OpenStack Compute', 'OpenStack Nova'):
             guest_tech.add('openstack')
             if not found_virt:
@@ -369,29 +375,6 @@ class LinuxVirtual(Virtual):
                     virtual_facts['virtualization_type'] = 'kvm'
                     virtual_facts['virtualization_role'] = 'guest'
                     found_virt = True
-
-        # In older Linux Kernel versions, /sys filesystem is not available
-        # dmidecode is the safest option to parse virtualization related values
-        dmi_bin = self.module.get_bin_path('dmidecode')
-        # We still want to continue even if dmidecode is not available
-        if dmi_bin is not None:
-            (rc, out, err) = self.module.run_command('%s -s system-product-name' % dmi_bin)
-            if rc == 0:
-                # Strip out commented lines (specific dmidecode output)
-                vendor_name = ''.join([line.strip() for line in out.splitlines() if not line.startswith('#')])
-                if vendor_name.startswith('VMware'):
-                    guest_tech.add('VMware')
-                    if not found_virt:
-                        virtual_facts['virtualization_type'] = 'VMware'
-                        virtual_facts['virtualization_role'] = 'guest'
-                        found_virt = True
-
-                if 'BHYVE' in out:
-                    guest_tech.add('bhyve')
-                    if not found_virt:
-                        virtual_facts['virtualization_type'] = 'bhyve'
-                        virtual_facts['virtualization_role'] = 'guest'
-                        found_virt = True
 
         if os.path.exists('/dev/kvm'):
             host_tech.add('kvm')
