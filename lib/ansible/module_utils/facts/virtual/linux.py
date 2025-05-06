@@ -161,9 +161,10 @@ class LinuxVirtual(Virtual):
         if not found_virt:
             virtual_facts['virtualization_role'] = 'guest'
 
-        product_name = get_file_content('/sys/devices/virtual/dmi/id/product_name')
-        sys_vendor = get_file_content('/sys/devices/virtual/dmi/id/sys_vendor')
-        product_family = get_file_content('/sys/devices/virtual/dmi/id/product_family')
+        product_name = self._read_field_from_dmi('product_name', 'system-product-name')
+        sys_vendor = self._read_field_from_dmi('sys_vendor', 'system-manufacturer')
+        product_family = self._read_field_from_dmi('product_family', 'system-family')
+        bios_vendor = self._read_field_from_dmi('bios_vendor', 'bios-vendor')
 
         if product_name in ('KVM', 'KVM Server', 'Bochs', 'AHV'):
             guest_tech.add('kvm')
@@ -200,8 +201,6 @@ class LinuxVirtual(Virtual):
             if not found_virt:
                 virtual_facts['virtualization_type'] = 'openstack'
                 found_virt = True
-
-        bios_vendor = get_file_content('/sys/devices/virtual/dmi/id/bios_vendor')
 
         if bios_vendor == 'Xen':
             guest_tech.add('xen')
